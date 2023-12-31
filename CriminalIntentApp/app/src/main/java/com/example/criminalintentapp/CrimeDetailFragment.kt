@@ -32,7 +32,7 @@ class CrimeDetailFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentCrimeDetailBinding.inflate(layoutInflater,container,false)
         return binding.root
     }

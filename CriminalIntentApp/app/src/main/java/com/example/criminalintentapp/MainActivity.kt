@@ -1,7 +1,6 @@
 package com.example.criminalintentapp
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.criminalintentapp.databinding.ActivityMainBinding
 
