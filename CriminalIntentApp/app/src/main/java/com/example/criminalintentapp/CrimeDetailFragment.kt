@@ -1,6 +1,7 @@
 package com.example.criminalintentapp
 
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,6 @@ class CrimeDetailFragment: Fragment() {
             title = "",
             date = Date(),
             isSolved = false,
-            requiresPolice = false
         )
     }
 
@@ -45,7 +45,7 @@ class CrimeDetailFragment: Fragment() {
                 crime = crime.copy(title = text.toString())
             }
             crimeData.apply {
-                text = crime.date.toString()
+                text = DateFormat.format("EEEE, MMMM dd, yyyy",crime.date).toString()
                 isEnabled = false
             }
 
