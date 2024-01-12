@@ -10,11 +10,5 @@ private lateinit var binding: ActivityMainBinding
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val fragment = CrimeListFragment()
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.fragment_container,fragment)
-            .commit()
     }
 }
