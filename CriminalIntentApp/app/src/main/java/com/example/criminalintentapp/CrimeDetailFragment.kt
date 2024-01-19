@@ -7,8 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import com.example.criminalintentapp.databinding.FragmentCrimeDetailBinding
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 
@@ -16,6 +22,10 @@ class CrimeDetailFragment: Fragment() {
     private  var _binding: FragmentCrimeDetailBinding? =null
 
     private val args: CrimeDetailFragmentArgs by navArgs()
+
+    private val crimeDetailViewModel: CrimeDetailViewModel by viewModels {
+        CrimeDetailViewModelFactory(args.crimeId)
+    }
 
     private val binding
         get() = checkNotNull(_binding) {
@@ -35,9 +45,11 @@ class CrimeDetailFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             crimeTitle.doOnTextChanged { text, _, _, _ ->
-
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(title = text.toString())
+                }
             }
-            crimeData.apply {
+            crimeDate.apply {
 
                 isEnabled = false
             }
@@ -45,6 +57,24 @@ class CrimeDetailFragment: Fragment() {
             crimeSolved.setOnCheckedChangeListener {_, isChecked ->
 
             }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                crimeDetailViewModel.crime.collect {crime ->
+                    crime?.let {updateUi(crime)}
+                }
+            }
+        }
+    }
+
+    private fun updateUi(crime: Crime) {
+        binding.apply {
+            if(crimeTitle.text.toString() != crime.title) {
+                crimeTitle.setText(crime.title)
+            }
+            crimeDate.text = crime.date.toString()
+            crimeSolved.isChecked = crime.isSolved
         }
     }
 

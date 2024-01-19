@@ -20,7 +20,7 @@
         android:label="CrimeDetailFragment"
         tools:layout="@layout/fragment_crime_detail">
         <argument
-            android:name="crimId"
+            android:name="crimeId"
             app:argType="java.util.UUID" />
     </fragment>
 </navigation>
