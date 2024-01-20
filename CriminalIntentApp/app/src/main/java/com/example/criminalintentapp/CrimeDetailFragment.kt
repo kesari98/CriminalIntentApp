@@ -1,6 +1,9 @@
 package com.example.criminalintentapp
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings.System.DATE_FORMAT
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,8 +23,8 @@ import com.example.criminalintentapp.dialog.DatePickerFragment
 import kotlinx.coroutines.launch
 import java.util.Date
 
-class CrimeDetailFragment: Fragment() {
-    private  var _binding: FragmentCrimeDetailBinding? =null
+class CrimeDetailFragment : Fragment() {
+    private var _binding: FragmentCrimeDetailBinding? = null
 
     private val args: CrimeDetailFragmentArgs by navArgs()
 
@@ -39,7 +42,7 @@ class CrimeDetailFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCrimeDetailBinding.inflate(layoutInflater,container,false)
+        _binding = FragmentCrimeDetailBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
@@ -52,7 +55,7 @@ class CrimeDetailFragment: Fragment() {
                 }
             }
 
-            crimeSolved.setOnCheckedChangeListener {_, isChecked ->
+            crimeSolved.setOnCheckedChangeListener { _, isChecked ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(isSolved = isChecked)
                 }
@@ -73,8 +76,8 @@ class CrimeDetailFragment: Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                crimeDetailViewModel.crime.collect {crime ->
-                    crime?.let {updateUi(crime)}
+                crimeDetailViewModel.crime.collect { crime ->
+                    crime?.let { updateUi(crime) }
                 }
             }
         }
@@ -82,7 +85,7 @@ class CrimeDetailFragment: Fragment() {
             DatePickerFragment.REQUEST_KEY_DATE
         ) { _, bundle ->
             val newDate = bundle.getSerializable(DatePickerFragment.BUNDLE_KEY_DATE) as Date
-            crimeDetailViewModel.updateCrime {crime ->
+            crimeDetailViewModel.updateCrime { crime ->
                 crime.copy(date = newDate)
             }
         }
@@ -90,7 +93,7 @@ class CrimeDetailFragment: Fragment() {
 
     private fun updateUi(crime: Crime) {
         binding.apply {
-            if(crimeTitle.text.toString() != crime.title) {
+            if (crimeTitle.text.toString() != crime.title) {
                 crimeTitle.setText(crime.title)
             }
             crimeDate.text = crime.date.toString()
@@ -100,11 +103,51 @@ class CrimeDetailFragment: Fragment() {
                 )
             }
             crimeSolved.isChecked = crime.isSolved
+
+            crimeReport.setOnClickListener {
+                val reportIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT,getCrimeReport(crime))
+                    putExtra(
+                        Intent.EXTRA_SUBJECT,
+                        getString(R.string.crime_report_subject)
+                    )
+                }
+                val chooserIntent = Intent.createChooser(
+                    reportIntent,
+                    getString(R.string.send_report)
+                )
+                startActivity(chooserIntent)
+            }
         }
+    }
+
+    private fun getCrimeReport(crime: Crime): String {
+        val solvedString = if (crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else {
+            getString(R.string.crime_report_unsolved)
+        }
+        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+        val suspectString = if (crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return getString(
+            R.string.crime_report,
+            crime.title, dateString, solvedString, suspectString
+        )
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val DATE_FORMAT = "EEE, MMM, dd"
     }
 }
