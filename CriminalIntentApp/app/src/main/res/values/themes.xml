@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CriminalIntentApp"
-        parent="Theme.MaterialComponents.DayNight.DarkActionBar" >
-
+    <style name="Theme.CriminalIntentApp" parent="Theme.MaterialComponents.DayNight">
     </style>
 
-    <style name="FancyListItemText">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/black</item>
-    </style>
 </resources>
