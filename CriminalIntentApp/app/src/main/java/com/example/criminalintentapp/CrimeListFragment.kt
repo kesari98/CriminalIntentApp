@@ -1,5 +1,6 @@
 package com.example.criminalintentapp
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,6 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.MenuProvider
+import androidx.core.view.isEmpty
+import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -23,7 +27,7 @@ import java.util.UUID
 
 private const val TAG = "CrimeListFragment"
 
-class CrimeListFragment : Fragment(),MenuProvider {
+class CrimeListFragment : Fragment(), MenuProvider {
 
     private var _binding: FragmentCrimeListBinding? = null
     private val binding
@@ -41,24 +45,28 @@ class CrimeListFragment : Fragment(),MenuProvider {
         _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
 
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.STARTED)
 
-        activity?.addMenuProvider(this,viewLifecycleOwner,Lifecycle.State.STARTED)
-
-         viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { crimes ->
                     binding.crimeRecyclerView.adapter =
-                        CrimeListAdapter(crimes) {crimeId ->
+                        CrimeListAdapter(crimes) { crimeId ->
                             findNavController().navigate(
-                               CrimeListFragmentDirections.showCrimeDetail(crimeId)
+                                CrimeListFragmentDirections.showCrimeDetail(crimeId)
                             )
                         }
+                    binding.addCrimeButton.apply {
+                        isVisible = crimes.isEmpty()
+                        setOnClickListener {
+                            showNewCrime()
+                        }
+                    }
                 }
             }
         }
@@ -70,7 +78,7 @@ class CrimeListFragment : Fragment(),MenuProvider {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.menu_crime_list,menu)
+        menuInflater.inflate(R.menu.menu_crime_list, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -79,9 +87,11 @@ class CrimeListFragment : Fragment(),MenuProvider {
                 showNewCrime()
                 true
             }
+
             else -> false
         }
     }
+
 
     private fun showNewCrime() {
         viewLifecycleOwner.lifecycleScope.launch {
